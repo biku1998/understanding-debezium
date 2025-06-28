@@ -1,7 +1,5 @@
 -- Create analytics database schema
-CREATE DATABASE analytics;
-
-\c analytics;
+-- Note: Database is already created by POSTGRES_DB environment variable
 
 -- Create analytics tables
 CREATE TABLE user_analytics (

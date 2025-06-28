@@ -16,6 +16,7 @@ curl -X POST -H "Content-Type: application/json" \
       "database.password": "debezium",
       "database.dbname": "ecommerce",
       "database.server.name": "ecommerce-server",
+      "topic.prefix": "ecommerce-server",
       "table.include.list": "public.users,public.products,public.orders,public.order_items",
       "plugin.name": "pgoutput",
       "publication.autocreate.mode": "filtered",

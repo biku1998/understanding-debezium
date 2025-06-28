@@ -1,7 +1,5 @@
 -- Create the source database schema
-CREATE DATABASE ecommerce;
-
-\c ecommerce;
+-- Note: Database is already created by POSTGRES_DB environment variable
 
 -- Create users table
 CREATE TABLE users (
@@ -55,10 +53,14 @@ INSERT INTO products (name, description, price, stock_quantity) VALUES
 ('Mouse', 'Wireless mouse', 29.99, 100),
 ('Keyboard', 'Mechanical keyboard', 89.99, 75);
 
--- Create Debezium user
+-- Create Debezium user with proper permissions
 CREATE USER debezium WITH REPLICATION LOGIN PASSWORD 'debezium';
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO debezium;
 GRANT USAGE ON SCHEMA public TO debezium;
+GRANT CREATE ON DATABASE ecommerce TO debezium;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO debezium;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO debezium;
+ALTER USER debezium CREATEDB;
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -77,4 +79,10 @@ CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Change ownership of all tables to debezium
+ALTER TABLE users OWNER TO debezium;
+ALTER TABLE products OWNER TO debezium;
+ALTER TABLE orders OWNER TO debezium;
+ALTER TABLE order_items OWNER TO debezium; 
