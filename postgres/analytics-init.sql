@@ -41,4 +41,9 @@ CREATE TABLE order_analytics (
 CREATE INDEX idx_user_analytics_user_id ON user_analytics(user_id);
 CREATE INDEX idx_product_analytics_product_id ON product_analytics(product_id);
 CREATE INDEX idx_order_analytics_order_id ON order_analytics(order_id);
-CREATE INDEX idx_order_analytics_user_id ON order_analytics(user_id); 
+CREATE INDEX idx_order_analytics_user_id ON order_analytics(user_id);
+
+-- Add unique constraints for ON CONFLICT operations
+ALTER TABLE user_analytics ADD CONSTRAINT unique_user_analytics_user_id UNIQUE(user_id);
+ALTER TABLE product_analytics ADD CONSTRAINT unique_product_analytics_product_id UNIQUE(product_id);
+ALTER TABLE order_analytics ADD CONSTRAINT unique_order_analytics_order_id UNIQUE(order_id); 

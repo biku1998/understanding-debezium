@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # PostgreSQL Source Database
   postgres-source:
@@ -90,3 +88,5 @@ services:
       ANALYTICS_DB_NAME: analytics
       ANALYTICS_DB_USER: postgres
       ANALYTICS_DB_PASSWORD: postgres
+    volumes:
+      - ./analytics-consumer:/app/analytics-consumer
