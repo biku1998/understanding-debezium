@@ -1,7 +1,6 @@
 #!/bin/bash
 
 echo "Waiting for Kafka Connect to be ready..."
-sleep 30
 
 echo "Deploying Debezium connector..."
 

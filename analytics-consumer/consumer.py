@@ -66,19 +66,30 @@ class AnalyticsConsumer:
         except (KeyError, TypeError, AttributeError):
             return default
 
-    def connect_kafka(self):
-        self.consumer = KafkaConsumer(
-            'ecommerce-server.public.users',
-            'ecommerce-server.public.products',
-            'ecommerce-server.public.orders',
-            'ecommerce-server.public.order_items',
-            bootstrap_servers=self.kafka_bootstrap_servers,
-            auto_offset_reset='earliest',
-            enable_auto_commit=False,  # manual commit
-            group_id='analytics-consumer-group',
-            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
-        )
-        logger.info("Connected to Kafka")
+    def connect_kafka(self, retries=5, delay=5):
+        for attempt in range(retries):
+            try:
+                self.consumer = KafkaConsumer(
+                    'ecommerce-server.public.users',
+                    'ecommerce-server.public.products',
+                    'ecommerce-server.public.orders',
+                    'ecommerce-server.public.order_items',
+                    bootstrap_servers=self.kafka_bootstrap_servers,
+                    auto_offset_reset='earliest',
+                    enable_auto_commit=False,  # manual commit
+                    group_id='analytics-consumer-group',
+                    value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+                )
+                logger.info("Connected to Kafka")
+                return
+            except Exception as e:
+                logger.error(f"Kafka connection failed (attempt {attempt + 1}/{retries}): {e}")
+                if attempt < retries - 1:
+                    logger.info(f"Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                else:
+                    logger.error("All Kafka connection retries failed.")
+                    raise
 
     def connect_database(self, retries=5, delay=3):
         for attempt in range(retries):
