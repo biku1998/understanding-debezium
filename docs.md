@@ -266,3 +266,23 @@ Because:
 ---
 
 Let me know if you want to simulate registering the connector via `curl` or Postman using this setup!
+
+## Datasets for blog prep
+
+- https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_geolocation_dataset.csv
+- https://www.kaggle.com/datasets/bytadit/ecommerce-order-dataset/data
+
+```py
+
+[
+    "olist_geolocation_dataset.csv",
+    "olist_customers_dataset.csv",
+    "olist_sellers_dataset.csv",
+    "olist_products_dataset.csv",
+    "olist_orders_dataset.csv",
+    "olist_order_items_dataset.csv",
+    "olist_order_reviews_dataset.csv",
+    "olist_order_payments_dataset.csv",
+    "product_category_name_translation.csv"
+]
+```

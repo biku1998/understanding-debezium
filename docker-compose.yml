@@ -1,8 +1,8 @@
 services:
   # PostgreSQL Source Database
-  postgres-source:
+  postgres-transactional:
     image: postgres:15
-    container_name: postgres-source
+    container_name: postgres-transactional
     environment:
       POSTGRES_DB: ecommerce
       POSTGRES_USER: postgres
@@ -10,8 +10,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/transactional-init.sql:/docker-entrypoint-initdb.d/transactional-init.sql
       - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./transactional-pgdata:/var/lib/postgresql/data
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -59,7 +60,7 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      postgres-source:
+      postgres-transactional:
         condition: service_healthy
     ports:
       - "8083:8083"
@@ -82,11 +83,30 @@ services:
       - "5433:5432"
     volumes:
       - ./postgres/analytics-init.sql:/docker-entrypoint-initdb.d/analytics-init.sql
+      - ./analytics-pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Transactional Dataloader
+  transactional-dataloader:
+    build: ./transactional-dataloader
+    container_name: transactional-dataloader
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres-transactional:
+        condition: service_healthy
+    environment:
+      TRANSACTIONAL_DB_HOST: postgres-transactional
+      TRANSACTIONAL_DB_PORT: 5432
+      TRANSACTIONAL_DB_NAME: ecommerce
+      TRANSACTIONAL_DB_USER: postgres
+      TRANSACTIONAL_DB_PASSWORD: postgres
+    volumes:
+      - ./transactional-dataloader:/app/transactional-dataloader
 
   # Analytics Consumer
   analytics-consumer:
