@@ -100,6 +100,7 @@ GRANT USAGE ON SCHEMA public TO debezium;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO debezium;
 GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO debezium;
 GRANT CREATE ON DATABASE ecommerce TO debezium;
+ALTER USER debezium CREATEDB;
 
 -- Automatically grant future table access to debezium
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO debezium;

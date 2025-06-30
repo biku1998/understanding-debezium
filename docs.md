@@ -286,3 +286,97 @@ Let me know if you want to simulate registering the connector via `curl` or Post
     "product_category_name_translation.csv"
 ]
 ```
+
+````md
+I've some datasets
+[
+"olist_geolocation_dataset.csv",
+"olist_customers_dataset.csv",
+"olist_sellers_dataset.csv",
+"olist_products_dataset.csv",
+"olist_orders_dataset.csv",
+"olist_order_items_dataset.csv",
+"olist_order_reviews_dataset.csv",
+"olist_order_payments_dataset.csv",
+"product_category_name_translation.csv"
+]
+
+And I want to create schema and ingest them in a postgres database.
+
+I'll give you a few entries from all the files.
+
+1. olist_geolocation_dataset.csv
+
+```csv
+"geolocation_zip_code_prefix","geolocation_lat","geolocation_lng","geolocation_city","geolocation_state"
+"01037",-23.54562128115268,-46.63929204800168,sao paulo,SP
+"01046",-23.546081127035535,-46.64482029837157,sao paulo,SP
+```
+````
+
+2. olist_customers_dataset.csv
+
+```csv
+"customer_id","customer_unique_id","customer_zip_code_prefix","customer_city","customer_state"
+"06b8999e2fba1a1fbc88172c00ba8bc7","861eff4711a542e4b93843c6dd7febb0","14409",franca,SP
+"18955e83d337fd6b2def6b18a428ac77","290c77bc529b7ac935b93aa66c333dc3","09790",sao bernardo do campo,SP
+```
+
+3. olist_sellers_dataset.csv
+
+```csv
+"seller_id","seller_zip_code_prefix","seller_city","seller_state"
+"3442f8959a84dea7ee197c632cb2df15","13023",campinas,SP
+d1b65fc7debc3361ea86b5f14c68d2e2,"13844",mogi guacu,SP
+```
+
+4. olist_products_dataset.csv
+
+```csv
+"product_id","product_category_name","product_name_lenght","product_description_lenght","product_photos_qty","product_weight_g","product_length_cm","product_height_cm","product_width_cm"
+"1e9e8ef04dbcff4541ed26657ea517e5",perfumaria,40,287,1,225,16,10,14
+"3aa071139cb16b67ca9e5dea641aaa2f",artes,44,276,1,1000,30,18,20
+```
+
+5. olist_orders_dataset.csv
+
+```csv
+"order_id","customer_id","order_status","order_purchase_timestamp","order_approved_at","order_delivered_carrier_date","order_delivered_customer_date","order_estimated_delivery_date"
+e481f51cbdc54678b7cc49136f2d6af7,"9ef432eb6251297304e76186b10a928d",delivered,2017-10-02 10:56:33,2017-10-02 11:07:15,2017-10-04 19:55:00,2017-10-10 21:25:13,2017-10-18 00:00:00
+"53cdb2fc8bc7dce0b6741e2150273451",b0830fb4747a6c6d20dea0b8c802d7ef,delivered,2018-07-24 20:41:37,2018-07-26 03:24:27,2018-07-26 14:31:00,2018-08-07 15:27:45,2018-08-13 00:00:00
+```
+
+6. olist_order_items_dataset.csv
+
+```csv
+"order_id","order_item_id","product_id","seller_id","shipping_limit_date","price","freight_value"
+"00010242fe8c5a6d1ba2dd792cb16214",1,"4244733e06e7ecb4970a6e2683c13e61","48436dade18ac8b2bce089ec2a041202",2017-09-19 09:45:35,58.90,13.29
+"00018f77f2f0320c557190d7a144bdd3",1,e5f2d52b802189ee658865ca93d83a8f,dd7ddc04e1b6c2c614352b383efe2d36,2017-05-03 11:05:13,239.90,19.93
+```
+
+7. olist_order_reviews_dataset.csv
+
+```csv
+"review_id","order_id","review_score","review_comment_title","review_comment_message","review_creation_date","review_answer_timestamp"
+"7bc2406110b926393aa56f80a40eba40","73fc7af87114b39712e6da79b0a377eb",4,,,2018-01-18 00:00:00,2018-01-18 21:46:59
+"80e641a11e56f04c1ad469d5645fdfde","a548910a1c6147796b98fdf73dbeba33",5,,,2018-03-10 00:00:00,2018-03-11 03:05:13
+```
+
+8. olist_order_payments_dataset.csv
+
+```csv
+"order_id","payment_sequential","payment_type","payment_installments","payment_value"
+b81ef226f3fe1789b1e8b2acac839d17,1,credit_card,8,99.33
+a9810da82917af2d9aefd1278f1dcfa0,1,credit_card,1,24.39
+```
+
+9. product_category_name_translation.csv
+   product_category_name,product_category_name_english
+   beleza_saude,health_beauty
+   informatica_acessorios,computers_accessories
+
+Help me create a database schema migration for this for postgres.
+
+```
+
+```

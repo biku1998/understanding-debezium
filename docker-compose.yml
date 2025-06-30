@@ -90,24 +90,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Transactional Dataloader
-  transactional-dataloader:
-    build: ./transactional-dataloader
-    container_name: transactional-dataloader
-    depends_on:
-      kafka:
-        condition: service_healthy
-      postgres-transactional:
-        condition: service_healthy
-    environment:
-      TRANSACTIONAL_DB_HOST: postgres-transactional
-      TRANSACTIONAL_DB_PORT: 5432
-      TRANSACTIONAL_DB_NAME: ecommerce
-      TRANSACTIONAL_DB_USER: postgres
-      TRANSACTIONAL_DB_PASSWORD: postgres
-    volumes:
-      - ./transactional-dataloader:/app/transactional-dataloader
-
   # Analytics Consumer
   analytics-consumer:
     build: ./analytics-consumer
@@ -127,3 +109,21 @@ services:
     volumes:
       - ./analytics-consumer:/app/analytics-consumer
     restart: unless-stopped
+
+  # Transactional Dataloader
+  transactional-dataloader:
+    build: ./transactional-dataloader
+    container_name: transactional-dataloader
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres-transactional:
+        condition: service_healthy
+    environment:
+      TRANSACTIONAL_DB_HOST: postgres-transactional
+      TRANSACTIONAL_DB_PORT: 5432
+      TRANSACTIONAL_DB_NAME: ecommerce
+      TRANSACTIONAL_DB_USER: postgres
+      TRANSACTIONAL_DB_PASSWORD: postgres
+    volumes:
+      - ./transactional-dataloader:/app/transactional-dataloader

@@ -54,6 +54,12 @@ CREATE TABLE dim_time (
     weekday VARCHAR(10)
 );
 
+-- Product category name translation table (for lookup)
+CREATE TABLE product_category_name_translation (
+    product_category_name VARCHAR(100) PRIMARY KEY,
+    product_category_name_english VARCHAR(100)
+);
+
 -- Join & filter fields
 CREATE INDEX idx_fact_orders_customer_id ON fact_orders(customer_id);
 CREATE INDEX idx_fact_orders_seller_id ON fact_orders(seller_id);
