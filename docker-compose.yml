@@ -1,3 +1,8 @@
+networks:
+  debezium-network:
+    driver: bridge
+    name: debezium-network
+
 services:
   # PostgreSQL Source Database
   postgres-transactional:
@@ -19,6 +24,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - debezium-network
 
   # Zookeeper
   zookeeper:
@@ -29,6 +36,8 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+    networks:
+      - debezium-network
 
   # Kafka
   kafka:
@@ -52,6 +61,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - debezium-network
 
   # Kafka Connect with Debezium
   kafka-connect:
@@ -70,6 +81,30 @@ services:
       OFFSET_STORAGE_TOPIC: connect_offsets
       STATUS_STORAGE_TOPIC: connect_statuses
       BOOTSTRAP_SERVERS: kafka:9092
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/connectors || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - debezium-network
+
+  # Connector Deployer
+  connector-deployer:
+    build: ./connector-deployer
+    container_name: connector-deployer
+    depends_on:
+      kafka-connect:
+        condition: service_healthy
+    environment:
+      KAFKA_CONNECT_URL: http://kafka-connect:8083
+      CONNECTOR_NAME: postgres-connector
+      MAX_RETRIES: 30
+      RETRY_DELAY: 10
+    restart: "no"
+    networks:
+      - debezium-network
 
   # Analytics PostgreSQL Database
   postgres-analytics:
@@ -89,6 +124,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - debezium-network
 
   # Analytics Consumer
   analytics-consumer:
@@ -106,9 +143,9 @@ services:
       ANALYTICS_DB_NAME: analytics
       ANALYTICS_DB_USER: postgres
       ANALYTICS_DB_PASSWORD: postgres
-    volumes:
-      - ./analytics-consumer:/app/analytics-consumer
     restart: unless-stopped
+    networks:
+      - debezium-network
 
   # Transactional Dataloader
   transactional-dataloader:
@@ -125,8 +162,12 @@ services:
       TRANSACTIONAL_DB_NAME: ecommerce
       TRANSACTIONAL_DB_USER: postgres
       TRANSACTIONAL_DB_PASSWORD: postgres
-    volumes:
-      - ./transactional-dataloader:/app/transactional-dataloader
+      # Data loader configuration
+      SPEED_MULTIPLIER: 10.0
+      DURATION_HOURS: 2.0
+      CLEAR_DATA: true
+    networks:
+      - debezium-network
 
   # Metabase for Analytics Visualization
   metabase:
@@ -138,13 +179,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      MB_DB_TYPE: postgres
-      MB_DB_DBNAME: analytics
-      MB_DB_PORT: 5432
-      MB_DB_USER: postgres
-      MB_DB_PASS: postgres
-      MB_DB_HOST: postgres-analytics
       JAVA_TIMEZONE: UTC
     volumes:
       - ./metabase-data:/metabase-data
     restart: unless-stopped
+    networks:
+      - debezium-network
