@@ -127,3 +127,24 @@ services:
       TRANSACTIONAL_DB_PASSWORD: postgres
     volumes:
       - ./transactional-dataloader:/app/transactional-dataloader
+
+  # Metabase for Analytics Visualization
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    depends_on:
+      postgres-analytics:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: analytics
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: postgres
+      MB_DB_HOST: postgres-analytics
+      JAVA_TIMEZONE: UTC
+    volumes:
+      - ./metabase-data:/metabase-data
+    restart: unless-stopped

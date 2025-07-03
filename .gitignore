@@ -343,3 +343,4 @@ tmp/
 
 transactional-pgdata/
 analytics-pgdata/
+metabase-data/
