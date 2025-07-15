@@ -30,7 +30,10 @@ All services run on a custom Docker network called `debezium-network` for better
 ### 1. Start the Services
 
 ```bash
-# Start all services
+# Start all services with fresh data
+./start.sh
+
+# Or start manually
 docker-compose up -d
 
 # Wait for services to be ready (about 30 seconds)
@@ -39,7 +42,7 @@ sleep 30
 
 ### 2. Deploy Debezium Connector
 
-The connector is now automatically deployed by the `connector-deployer` service when you start the stack. No manual intervention needed!
+The connector is automatically deployed by the `connector-deployer` service when you start the stack. No manual intervention needed!
 
 If you need to redeploy the connector manually:
 
@@ -72,16 +75,13 @@ docker exec -it postgres-analytics psql -U postgres -d analytics \
   -c "SELECT * FROM dim_customers;"
 ```
 
-#### Option B: Realistic Data Loader (Recommended)
+#### Option B: Load Sample Data (Recommended)
 
 ```bash
-# Run realistic data loader with default settings (10x speed, 2 hours)
-docker exec -it transactional-dataloader /app/start.sh
+# Run the data loader to populate the transactional database
+docker exec -it transactional-dataloader python data-loader.py
 
-# Or run with custom settings
-docker exec -it transactional-dataloader python realistic-data-loader.py --speed 5 --duration 1 --clear
-
-# Or modify environment variables in docker-compose.yml and restart
+# The analytics consumer will automatically process the data as it's loaded
 ```
 
 ## Services
@@ -93,19 +93,33 @@ docker exec -it transactional-dataloader python realistic-data-loader.py --speed
 - **connector-deployer**: Automatically deploys the Debezium connector
 - **zookeeper** (port 2181): Zookeeper for Kafka
 - **analytics-consumer**: Python consumer processing Kafka messages
-- **transactional-dataloader**: Realistic data generation service
+- **transactional-dataloader**: Data loading service with e-commerce dataset
 - **metabase** (port 3000): Analytics visualization dashboard
 
-## Realistic Data Loader
+## Data Loading
 
-The realistic data loader simulates real-world e-commerce operations by creating data over time instead of loading everything at once. This provides a more realistic testing environment for Debezium.
+The project includes a comprehensive e-commerce dataset from Olist (Brazilian e-commerce platform) that provides realistic data for testing Debezium's change capture capabilities.
 
-### Features
+### Dataset Contents
 
-- **Time-based simulation**: Orders created over specified duration
-- **Realistic timing**: Reviews added after delivery delays
-- **Configurable speed**: Adjust simulation speed (1x = real time, 10x = 10x faster)
-- **Business logic**: Proper order flow with items, payments, and reviews
+- **Customers**: 99,441 customer records
+- **Sellers**: 3,095 seller records
+- **Products**: 32,951 product records
+- **Orders**: 99,441 order records
+- **Order Items**: 112,650 order item records
+- **Order Payments**: 103,886 payment records
+- **Order Reviews**: 99,224 review records
+- **Geolocation**: 8,016 location records
+- **Product Categories**: 71 category translations
+
+### Loading Process
+
+The data loader:
+
+1. **Clears existing data** to ensure a clean state
+2. **Loads static data** (customers, sellers, products, geolocation, categories)
+3. **Loads transactional data** in batches (orders, items, payments, reviews)
+4. **Simulates realistic timing** with delays between batches
 
 ### Configuration
 
@@ -115,27 +129,7 @@ The data loader is configured directly in `docker-compose.yml`:
 environment:
   SPEED_MULTIPLIER: 10.0 # Speed multiplier (1.0 = real time)
   DURATION_HOURS: 2.0 # Simulation duration in hours
-  CLEAR_DATA: false # Clear existing data before loading
-```
-
-To modify these settings, edit the values in `docker-compose.yml` and restart the service.
-
-#### Command Line Options
-
-```bash
-python realistic-data-loader.py --speed 10 --duration 2 --clear
-```
-
-### Usage Examples
-
-```bash
-# Run with default settings (10x speed, 2 hours)
-docker exec -it transactional-dataloader /app/start.sh
-
-# Run with custom settings
-docker exec -it transactional-dataloader python realistic-data-loader.py --speed 5 --duration 1 --clear
-
-# Or modify docker-compose.yml and restart the service
+  CLEAR_DATA: true # Clear existing data before loading
 ```
 
 ## Database Schemas
@@ -257,7 +251,7 @@ UPDATE orders SET order_status = 'shipped' WHERE order_id = 'test_order_001';
    docker-compose logs kafka-connect
 
    # Verify PostgreSQL configuration
-   docker exec -it postgres-source psql -U postgres -c "SHOW wal_level;"
+   docker exec -it postgres-transactional psql -U postgres -c "SHOW wal_level;"
    ```
 
 2. **No messages in Kafka**
@@ -267,7 +261,7 @@ UPDATE orders SET order_status = 'shipped' WHERE order_id = 'test_order_001';
    curl -X GET http://localhost:8083/connectors/postgres-connector/status
 
    # Check replication slots
-   docker exec -it postgres-source psql -U postgres -c "SELECT * FROM pg_replication_slots;"
+   docker exec -it postgres-transactional psql -U postgres -c "SELECT * FROM pg_replication_slots;"
    ```
 
 3. **Analytics not updating**
@@ -284,6 +278,9 @@ UPDATE orders SET order_status = 'shipped' WHERE order_id = 'test_order_001';
 
 ```bash
 # Stop all services
+./stop.sh
+
+# Or stop manually
 docker-compose down
 
 # Remove volumes (will delete all data)
@@ -310,6 +307,8 @@ docker-compose down -v
 ```
 .
 ├── docker-compose.yml                    # Main orchestration
+├── start.sh                             # Start script (clears data and starts fresh)
+├── stop.sh                              # Stop script
 ├── postgres/
 │   ├── transactional-init.sql           # Source database setup
 │   ├── postgresql.conf                  # PostgreSQL configuration
@@ -318,8 +317,7 @@ docker-compose down -v
 │   ├── deploy-connector.sh              # Dockerized connector deployment
 │   └── Dockerfile                       # Connector deployer container
 ├── transactional-dataloader/
-│   ├── realistic-data-loader.py         # Realistic data generation
-│   ├── data-loader.py                   # Legacy bulk loader
+│   ├── data-loader.py                   # Data loading script
 │   ├── requirements.txt                 # Python dependencies
 │   ├── Dockerfile                       # Data loader container
 │   └── e-commerce-data/                 # CSV data files
